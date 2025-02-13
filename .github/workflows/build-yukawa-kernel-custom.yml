@@ -37,7 +37,7 @@ jobs:
         PATH=~/bin:$PATH
         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
         chmod a+x ~/bin/repo
-        repo init -u https://github.com/skywalker0507/yukawa-kernel-build.git -b yukawa-android14-6.1 --depth=1
+        repo init -u https://github.com/skywalker0507/yukawa-kernel-build.git --depth=1
         repo sync
         tools/bazel clean
         tools/bazel run //yukawa-device:yukawa_dist
