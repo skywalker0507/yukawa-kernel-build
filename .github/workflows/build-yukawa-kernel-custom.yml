@@ -1,0 +1,49 @@
+name: build-yukawa-kernel-custom
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+  
+    runs-on: ubuntu-20.04
+    
+    steps:
+    
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: false
+
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+      
+    - name: install dependencies
+      run: |
+        sudo apt update
+        sudo apt-get install --no-install-recommends -y binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates python3 xz-utils libc6-dev aria2 build-essential ccache
+
+    - name: build
+      run: |
+        mkdir ~/bin
+        PATH=~/bin:$PATH
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        repo init -u https://github.com/skywalker0507/yukawa-kernel-build.git -b yukawa-android14-6.1 --depth=1
+        repo sync
+        tools/bazel clean
+        tools/bazel run //yukawa-device:yukawa_dist
+
+    - name: upload
+      uses: actions/upload-artifact@v4
+      with:
+       name: yukawa-kernel
+       path: out/yukawa/dist
